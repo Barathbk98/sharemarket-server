@@ -24,7 +24,7 @@ module.exports = {
       host : '34.198.80.136',
       ref  : 'origin/master',
       repo : 'https://github.com/Barathbk98/sharemarket-server.git',
-      path : '/var/www/sharemarket/server',
+      path : '/var/www/sharemarket',
       'post-deploy' : 'npm install && pm2 reload ecosystem.config.js --env production'
     }
   }
