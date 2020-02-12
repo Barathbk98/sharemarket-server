@@ -195,6 +195,10 @@ app.get("/search",(req,res) => {
       }
 })
 
+app.get("/",()=>{
+  res.send("This Server is Running !!!!");
+})
+
 app.listen(port,()=>{
     console.log("listening on port",port);
 })
