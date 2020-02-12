@@ -31,7 +31,7 @@ app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.post("/fetch",(req,res)=>{
+app.post("/api/fetch",(req,res)=>{
     axios.post(`https://www.moneycontrol.com/mc/widget/basicchart/get_chart_value?classic=true&sc_did=${req.body.id}&dur=max`)
     .then(async (response)=>{
         let available = await pool.query(`SELECT * FROM sharedata WHERE shareid = '${req.body.id}'`)
@@ -92,7 +92,7 @@ app.post("/fetch",(req,res)=>{
 })
 })
 
-app.get("/getid",(req,res)=>{
+app.get("/api/getid",(req,res)=>{
     if(req.query.id != "")
     {
         pool.query(`SELECT DISTINCT shareid from sharedata WHERE shareid LIKE '${req.query.id}%'`)
@@ -104,7 +104,7 @@ app.get("/getid",(req,res)=>{
     }
 })
 
-app.get("/search",(req,res) => {
+app.get("/api/search",(req,res) => {
     from = req.query.size*req.query.from;
     var search = [];
     if(req.query.id != "" && req.query.value != "")
