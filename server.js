@@ -54,7 +54,6 @@ app.post("/api/fetch",(req,res)=>{
                 index: "sharemarket",
                 body: obj
             })
-       
         })
         .catch(error => {
             console.log(error)
