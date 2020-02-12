@@ -19,7 +19,7 @@ client.cluster.health({},function(err,resp,status) {
 
 const pool = new Pool({
   user: 'bk',
-  host: 'localhost',
+  host: 'sharemarket.cbkmk6wdlemj.us-east-1.rds.amazonaws.com',
   database: 'sharemarket',
   password: 'bk191998',
   port: 5432,
