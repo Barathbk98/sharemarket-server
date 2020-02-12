@@ -195,7 +195,7 @@ app.get("/search",(req,res) => {
       }
 })
 
-app.get("/",()=>{
+app.get("/",(req,res)=>{
   res.send("This Server is Running !!!!");
 })
 
