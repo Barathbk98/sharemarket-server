@@ -197,6 +197,7 @@ app.get("/api/search",(req,res) => {
 })
 
 app.get("/api",(req,res)=>{
+  console.log("got")
   res.send("This Server is Running !!!!");
 })
 
