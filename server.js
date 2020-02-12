@@ -54,14 +54,15 @@ app.post("/api/fetch",(req,res)=>{
                 index: "sharemarket",
                 body: obj
             })
-            
+
         })
         .catch(error => {
+            res.json({success:false})
             console.log(error)
             // error;
         });
     }
-    res.json({data : response.data.g1})
+    res.json({success : true , data : response.data.g1})
 
     //             pool.query(`INSERT INTO sharedata (shareid,date,open,high,low,close,volume,value) VALUES ('${req.body.id}','${data.date}','${data.open}','${data.high}','${data.low}','${data.close}','${data.volume}','${data.value}') RETURNING *`)
     //         .then((value)=>{
