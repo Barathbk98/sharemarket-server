@@ -7,7 +7,7 @@ const pgp = require('pg-promise')({
     capSQL: true
 })
 const port = 5000;
-const db = pgp("postgres://bk:bk191998@localhost:5432/sharemarket");
+const db = pgp("postgres://bk:bk191998@sharemarket.cbkmk6wdlemj.us-east-1.rds.amazonaws.com:5432/sharemarket");
 
 var client = new elasticsearch.Client({
     hosts:['http://localhost:9200']
