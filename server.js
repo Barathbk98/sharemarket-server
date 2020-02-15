@@ -341,7 +341,6 @@ app.get("/api/datehits",(req,res)=>{
               date_histogram : {
                 field : "date",
                 calendar_interval : `${interval}`,
-                size : "30"
               }
             }
           }
