@@ -210,6 +210,7 @@ app.get("/api/search",(req,res) => {
           });
       }
 })
+
 const p = '%{IP:client} - - \\[%{DATA:date}\\] "%{WORD:method} %{URIPATHPARAM:file} %{URIHOST:site}%{URIPATHPARAM:url}" %{INT:code} %{INT:request} "%{DATA:mtag}" "%{DATA:agent}"';
 // const p = '%{DATA:log} \\[%{TIMESTAMP_ISO8601:timestamp}\\] %{URIPATHPARAM:request}';
 // const str = 'info [2020-02-12T16:45:00.012Z] /api'
@@ -307,10 +308,13 @@ app.get("/api/datehits",(req,res)=>{
   let enddate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
   let startdate;
   let interval;
+  let bucket;
   if(req.query.type==="day"){
+    bucket = "24"
     interval = "1h";
     startdate = moment(enddate).subtract(1, 'days').format("YYYY-MM-DDTHH:mm:ss"); 
   } else if (req.query.type==="month") {
+    bucket = "31"
     startdate = moment(enddate).subtract(1, 'months').format("YYYY-MM-DDTHH:mm:ss");
     interval = "1d"; 
   } else {
@@ -341,6 +345,7 @@ app.get("/api/datehits",(req,res)=>{
               date_histogram : {
                 field : "date",
                 calendar_interval : `${interval}`,
+                buckets : `${bucket}`
               }
             }
           }
