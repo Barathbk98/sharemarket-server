@@ -3,9 +3,23 @@ const cors = require('cors');
 const axios = require('axios');
 const Pool = require('pg').Pool;
 const elasticsearch = require('elasticsearch');
+var lineReader = require('line-reader');
+const moment =require('moment')
 const pgp = require('pg-promise')({
     capSQL: true
 })
+
+
+var split = require('split');
+var through = require('through2');
+var cron = require('node-cron');
+var log = "../../../log/nginx/node-app.access.log"       //production
+// var log = "./node-app.access.log.1"      //development
+var lineno = "./lineno.txt"
+const fs = require('fs')
+const grok = require('grok-js')
+
+var logger = require('logger').createLogger('request.log'); 
 const port = 5000;
 const db = pgp("postgres://bk:bk191998@sharemarket.cbkmk6wdlemj.us-east-1.rds.amazonaws.com:5432/sharemarket");
 
@@ -98,6 +112,7 @@ app.get("/api/getid",(req,res)=>{
     {
         pool.query(`SELECT DISTINCT shareid from sharedata WHERE shareid LIKE '${req.query.id}%'`)
         .then((response)=>{
+            console.log(response.rows)
             res.json({data: response.rows});
         })
     } else {
@@ -195,11 +210,224 @@ app.get("/api/search",(req,res) => {
           });
       }
 })
-
+const p = '%{IP:client} - - \\[%{DATA:date}\\] "%{WORD:method} %{URIPATHPARAM:file} %{URIHOST:site}%{URIPATHPARAM:url}" %{INT:code} %{INT:request} "%{DATA:mtag}" "%{DATA:agent}"';
+// const p = '%{DATA:log} \\[%{TIMESTAMP_ISO8601:timestamp}\\] %{URIPATHPARAM:request}';
+// const str = 'info [2020-02-12T16:45:00.012Z] /api'
 app.get("/api",(req,res)=>{
-  console.log("got")
+  
+  // logger.format = function(level, date, message) {
+  //   return "info" + " " + "["+date.toISOString()+"]" + " " + req.route.path;
+  // };
+  // logger.info();
+  // console.log(req);
   res.send("This Server is Running !!!!");
 })
+let start="0";
+
+// line_counter=(data)=>{
+//   console.log(data);
+  
+// }
+
+app.get('/api/logsearch',(req,res)=>{
+  let offset = req.query.limit*req.query.offset;
+  let search = [];
+  client.search({
+    index : "logs",
+    type : "log",
+    size : `${req.query.limit}`,
+    // offset: `${offset}`,
+      body : {
+        query: {
+          multi_match :{
+            query : `${req.query.search}`,
+            fields : ["client","method","code","agent"]
+          }
+        }
+        
+    }
+  },(error,response,status) => {
+    if (error){
+      console.log("search error: "+error)
+    }
+    else {
+      response.hits.hits.forEach(function(hit){
+          search.push(hit);
+      });
+      res.json({data : search})
+    }
+  })
+})
+
+app.get("/api/logs",(req,res)=>{
+  client.search({
+    index: "logs",
+    type: "log",
+    size: `${req.query.limit}`
+  },(error,response,status) => {
+    if (error){
+      console.log("search error: "+error)
+    }
+    else {
+      // response.hits.hits.forEach(function(hit){
+      //     search.push(hit);
+      // });
+      res.json({data : response.hits.hits})
+    }
+  })
+})
+
+app.get('/api/statuscount',(req,res) => {
+  client.search({
+    index : "logs",
+    type : "log",
+    size : "0",
+    body:{
+      aggs : {
+        // match :{
+        //   start:"0",
+        //   code : "200"
+        // },
+        code_count : { terms : { field : "code" } },
+        agent_count : { terms : { field : "agent" } },        
+    }
+    }
+  },(error,response,status)=>{
+    if(error){
+      console.log(error)
+    } else {
+      res.json({data:response.aggregations})
+    }
+  })
+})
+
+app.get("/api/datehits",(req,res)=>{
+  let enddate = moment("2020-02-13T00:00:00").format("YYYY-MM-DDTHH:mm:ss");
+  let startdate;
+  if(req.query.type==="day"){
+    startdate = moment(enddate).subtract(1, 'days').format("YYYY-MM-DDTHH:mm:ss"); 
+  } else if (req.query.type==="month") {
+    startdate = moment(enddate).subtract(1, 'months').format("YYYY-MM-DDTHH:mm:ss"); 
+  } else {
+    startdate = moment(enddate).subtract(1, 'years').format("YYYY-MM-DDTHH:mm:ss"); 
+  }
+  console.log(startdate);
+  console.log(enddate)
+
+    client.search({
+      index: "logs",
+      type: "log",
+      size :100,
+      body:{
+          query:{
+            bool : {
+              filter : [{
+                range : {
+                  date : {
+                    gte : `${startdate}`,
+                    lte : `${enddate}`
+                  }
+                }
+              }]
+            }
+          },  
+          aggs:{
+            hits: {
+              terms : {
+                field : "date",
+                "size": 8
+              }
+            }
+          }
+        }
+    },(err,response,status)=>{
+      if(err){
+        console.log(err);
+        res.status(400).send(err)
+      } else {
+        res.json({data : response.aggregations.hits.buckets , start : startdate , end : enddate})
+      }
+    })
+})
+
+cron.schedule('*/10 * * * * *', ()=>{
+  start = fs.readFileSync(lineno,'UTF-8')
+  console.log("line no ====>",parseInt(start))
+  let elasticbuffer = [];
+
+    grok.loadDefault((err,pattern) =>{
+      if(err){
+        console.log(err);
+        return
+      }
+      const pat = pattern.createPattern(p);
+      const reader = fs.createReadStream(log).pipe(split(/(\r?\n)/)).pipe(startAt(parseInt(start)));
+    let current_line = parseInt(start);
+      lineReader.eachLine(reader,(line, last) => {
+        var str = line
+        pat.parse(str, (err, obj) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+          if(last){
+            console.log("last");
+            fs.writeFileSync(lineno,current_line)
+            // bulkinsert(elasticbuffer);
+            console.log("done");
+          }
+          if(obj!=null)
+          {
+            obj.date = moment(obj.date,'DD/MMM/YYYY:HH:mm:ss +0000')._d
+            // elasticbuffer.push({index:{_index: 'logs', _type: 'log'}})
+          // elasticbuffer.push(obj);
+          client.index({
+            index : "logs",
+            type : "log",
+            body : obj
+          })
+          // console.log(obj);
+          }
+        });
+        current_line++;
+        // console.log(line,last,current_line);
+      })
+      // bulkinsert(elasticbuffer);
+  })
+  
+})
+
+// function bulkinsert (elasticbuffer) {
+//   client.bulk({
+//     index: "logs",
+//     body: elasticbuffer
+// }).then(()=>{
+//   console.log("inserted")
+// }).catch(err=>{
+//   console.log(err);
+// })
+// }
+
+function startAt (nthLine) {
+  var i = 0;
+  nthLine = nthLine || 0;
+  var stream = through(function (chunk, enc, next) {
+    if (i>=nthLine){ 
+      this.push(chunk)
+    };
+    if (chunk.toString().match(/(\r?\n)/)) i++;
+    next();
+  })
+  return stream;
+}
+
+
+// const line_counter = ((i = parseInt(start)) => () => ++i)();
+
+// line_counter = (start) =>{
+//   i = parseInt(start)
+// }
+
 
 app.listen(port,()=>{
     console.log("listening on port",port);

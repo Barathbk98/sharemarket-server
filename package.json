@@ -10,12 +10,24 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {
+    "loadtest": "*"
+  },
   "dependencies": {
     "axios": "^0.19.2",
     "cors": "^2.8.5",
+    "cron": "^1.8.2",
     "elasticsearch": "^16.6.0",
     "express": "^4.17.1",
+    "fs": "0.0.1-security",
+    "grok-js": "^3.3.0",
+    "line-reader": "^0.4.0",
+    "logger": "0.0.1",
+    "moment": "^2.24.0",
+    "node-cron": "^2.0.3",
     "pg": "^7.18.1",
-    "pg-promise": "^10.4.3"
+    "pg-promise": "^10.4.3",
+    "split": "^1.0.1",
+    "through2": "^3.0.1"
   }
 }
