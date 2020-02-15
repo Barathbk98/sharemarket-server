@@ -302,7 +302,7 @@ app.get('/api/statuscount',(req,res) => {
 })
 
 app.get("/api/datehits",(req,res)=>{
-  let enddate = moment("2020-02-13T00:00:00").format("YYYY-MM-DDTHH:mm:ss");
+  let enddate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
   let startdate;
   if(req.query.type==="day"){
     startdate = moment(enddate).subtract(1, 'days').format("YYYY-MM-DDTHH:mm:ss"); 
@@ -350,7 +350,7 @@ app.get("/api/datehits",(req,res)=>{
     })
 })
 
-cron.schedule('*/10 * * * * *', ()=>{
+cron.schedule('*/5 * * * * *', ()=>{
   start = fs.readFileSync(lineno,'UTF-8')
   console.log("line no ====>",parseInt(start))
   let elasticbuffer = [];
