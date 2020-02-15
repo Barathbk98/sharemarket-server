@@ -342,9 +342,9 @@ app.get("/api/datehits",(req,res)=>{
           },  
           aggs:{
             hits: {
-              date_histogram : {
+              auto_date_histogram : {
                 field : "date",
-                calendar_interval : `${interval}`,
+                // calendar_interval : `${interval}`,
                 buckets : `${bucket}`
               }
             }
