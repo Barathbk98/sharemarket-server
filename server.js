@@ -337,6 +337,7 @@ app.get("/api/datehits",(req,res)=>{
             hits: {
               terms : {
                 field : "date",
+                size : "20"
               }
             }
           }
