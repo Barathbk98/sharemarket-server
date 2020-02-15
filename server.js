@@ -306,10 +306,13 @@ app.get('/api/statuscount',(req,res) => {
 app.get("/api/datehits",(req,res)=>{
   let enddate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
   let startdate;
+  let interval;
   if(req.query.type==="day"){
+    interval = "1h";
     startdate = moment(enddate).subtract(1, 'days').format("YYYY-MM-DDTHH:mm:ss"); 
   } else if (req.query.type==="month") {
-    startdate = moment(enddate).subtract(1, 'months').format("YYYY-MM-DDTHH:mm:ss"); 
+    startdate = moment(enddate).subtract(1, 'months').format("YYYY-MM-DDTHH:mm:ss");
+    interval = "1d"; 
   } else {
     startdate = moment(enddate).subtract(1, 'years').format("YYYY-MM-DDTHH:mm:ss"); 
   }
@@ -335,9 +338,10 @@ app.get("/api/datehits",(req,res)=>{
           },  
           aggs:{
             hits: {
-              terms : {
+              date_histogram : {
                 field : "date",
-                size : "20"
+                calendar_interval : `${interval}`,
+                size : "30"
               }
             }
           }
