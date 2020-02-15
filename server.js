@@ -260,10 +260,12 @@ app.get('/api/logsearch',(req,res)=>{
 })
 
 app.get("/api/logs",(req,res)=>{
+  let from = req.query.limit*req.query.page;
   client.search({
     index: "logs",
     type: "log",
-    size: `${req.query.limit}`
+    size: `${req.query.limit}`,
+    from: `${from}`
   },(error,response,status) => {
     if (error){
       console.log("search error: "+error)
@@ -317,7 +319,7 @@ app.get("/api/datehits",(req,res)=>{
     client.search({
       index: "logs",
       type: "log",
-      size :100,
+      size : "0",
       body:{
           query:{
             bool : {
@@ -335,7 +337,6 @@ app.get("/api/datehits",(req,res)=>{
             hits: {
               terms : {
                 field : "date",
-                "size": 8
               }
             }
           }
