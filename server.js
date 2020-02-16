@@ -318,6 +318,7 @@ app.get("/api/datehits",(req,res)=>{
     startdate = moment(enddate).subtract(1, 'months').format("YYYY-MM-DDTHH:mm:ss");
     interval = "1d"; 
   } else {
+    interval = "1M"; 
     startdate = moment(enddate).subtract(1, 'years').format("YYYY-MM-DDTHH:mm:ss"); 
   }
   console.log(startdate);
