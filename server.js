@@ -221,6 +221,7 @@ app.get("/api",(req,res)=>{
   // };
   // logger.info();
   // console.log(req);
+  console.log("GOT request")
   res.send("This Server is Running !!!!");
 })
 let start="0";
