@@ -317,7 +317,7 @@ app.get("/api/datehits",(req,res)=>{
     bucket = "31"
     startdate = moment(enddate).subtract(1, 'months').format("YYYY-MM-DDTHH:mm:ss");
     interval = "1d"; 
-  } else {z
+  } else {
     interval = "1M"; 
     startdate = moment(enddate).subtract(1, 'years').format("YYYY-MM-DDTHH:mm:ss"); 
   }
